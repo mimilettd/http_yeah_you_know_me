@@ -1,13 +1,14 @@
 require 'minitest'
 require 'minitest/autorun'
-require './lib/output'
 require 'net/http'
 require "uri"
 
 class OutputTest < Minitest::Test
-  def test_it_can_make_request
-    output = Output.new
-    output.make_request
-    assert_equal 9, output.request_lines.length
+  def test_that_it_increments
+    uri = URI.parse("http://localhost:9292")
+    Net::HTTP.get_response(uri)
+    response = Net::HTTP.get_response(uri)
+
+    assert_equal response.body, "<html><head></head><body>Hello, World! (2)</body></html>"
   end
 end
