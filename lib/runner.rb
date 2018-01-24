@@ -1,4 +1,4 @@
-require './lib/output'
+require './lib/server'
 
-output = Output.new
-output.start_server
+output = Server.new
+output.start
