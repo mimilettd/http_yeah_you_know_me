@@ -26,8 +26,15 @@ class ServerTest < Minitest::Test
   end
 
   def test_it_returns_the_diagnostics
-
-    skip
+    response = request
+    assert_includes response.body, 'Verb: GET'
+    assert_includes response.body, 'Path: /'
+    assert_includes response.body, 'Protocol: HTTP/1.1'
+    assert_includes response.body, 'Accept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3'
+    assert_includes response.body, 'Accept: */*'
+    assert_includes response.body, 'User-Agent: Ruby'
+    assert_includes response.body, 'Host:  localhost'
+    assert_includes response.body, 'Port: 9292'
   end
 end
 
