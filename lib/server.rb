@@ -1,7 +1,9 @@
 require 'socket'
 require 'pry'
+require_relative 'html_content'
 
 class Server
+  include HtmlContent
   attr_reader :tcp_server,
               :request_lines,
               :counter
@@ -22,44 +24,48 @@ class Server
     loop do
       update_request_data
       @client = tcp_server.accept
-      while line = @client.gets and !line.chomp.empty?
-        @request_lines << line.chomp
-        if line.include?("/resetcount")
-          reset_request_count
-        end
-      end
 
-      new = @request_lines.map { |line| line.split(' ') }
-      first_elem = new.shift
-      return_hash = {"Verb:" => first_elem[0], "Path:" => first_elem[1], "Protocol:" => first_elem[2]}
-
-      new.each do |array|
-        return_hash[array[0]] = array[1]
-      end
-
-      return_hash['Host:'] = @request_lines.last.split(':')[1]
-      return_hash['Port:'] = @request_lines.last.split(':').last
+      parse_lines
 
       puts request_lines.inspect
-
-      response_diagnostics = ""
-
-      return_hash.each do |k, v|
-        response_diagnostics += "#{k} #{v} \n"
-      end
-
-      response = "<pre>" + request_lines.join("\n") + "</pre>"
-      body = "Hello, World! (#{@requests}) <pre>#{response_diagnostics}</pre>"
-      output = "<html><head></head><body>#{body}</body></html>"
-      headers = ["http/1.1 200 ok",
-                "date: #{Time.now.strftime('%a, %e %b %Y %H:%M:%S %z')}",
-                "server: ruby",
-                "content-type: text/html; charset=iso-8859-1",
-                "content-length: #{output.length}\r\n\r\n"].join("\r\n")
       @client.puts headers
       @client.puts output
       stop
     end
+  end
+
+  def parse_lines
+    while line = @client.gets and !line.chomp.empty?
+      @request_lines << line.chomp
+      if line.include?("/resetcount")
+        reset_request_count
+      end
+    end
+  end
+
+  def parse_diagnostic
+    response_diagnostics = ""
+
+    diagnostic_hash.each do |k, v|
+      response_diagnostics += "#{k} #{v} \n"
+    end
+
+    response_diagnostics
+  end
+
+  def diagnostic_hash
+    request_array = @request_lines.map { |line| line.split(' ') }
+    http_verb_array = request_array.shift
+    request_hash = {"Verb:" => http_verb_array[0], "Path:" => http_verb_array[1], "Protocol:" => http_verb_array[2]}
+
+    request_array.each do |array|
+      request_hash[array[0]] = array[1]
+    end
+
+    request_hash['Host:'] = @request_lines.last.split(':')[1]
+    request_hash['Port:'] = @request_lines.last.split(':').last
+
+    request_hash
   end
 
   def reset_request_count
