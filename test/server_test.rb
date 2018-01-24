@@ -5,20 +5,30 @@ require 'net/http'
 require 'uri'
 
 class ServerTest < Minitest::Test
-  def setup
+  def request(number = 1)
+    response = nil
     uri = URI.parse('http://localhost:9292')
-    Net::HTTP.get_response(uri)
-    @response = Net::HTTP.get_response(uri)
+    number.times do
+      response = Net::HTTP.get_response(uri)
+    end
+    response
+  end
+
+  def reset_request_count
+    uri_reset = URI.parse('http://localhost:9292/resetcount')
+    Net::HTTP.get_response(uri_reset)
   end
 
   def test_that_it_increments
-    # binding.pry
-    assert_includes @response.body, 'Hello, World! (2)'
+    reset_request_count
+    response = request(2)
+    assert_includes response.body, 'Hello, World! (2)'
   end
 
-  # def test_it_returns_the_diagnostics
-  #   skip
-  # end
+  def test_it_returns_the_diagnostics
+
+    skip
+  end
 end
 
 # Iteration 1 - Outputting Diagnostics

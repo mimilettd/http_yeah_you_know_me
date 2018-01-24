@@ -1,4 +1,4 @@
 require './lib/server'
 
-output = Server.new
-output.start
+server = Server.new
+server.start

@@ -22,7 +22,14 @@ class Server
       @client = tcp_server.accept
       while line = @client.gets and !line.chomp.empty?
         @request_lines << line.chomp
+        if line.include?("/resetcount")
+          reset_request_count
+        end
       end
+
+      # if @request_lines[0].each do |line|
+      #   line.include?("/resetcount")
+      # end
 
       puts request_lines.inspect
 
@@ -38,6 +45,10 @@ class Server
       @client.puts output
       stop
     end
+  end
+
+  def reset_request_count
+    @requests = 0
   end
 
   def stop
